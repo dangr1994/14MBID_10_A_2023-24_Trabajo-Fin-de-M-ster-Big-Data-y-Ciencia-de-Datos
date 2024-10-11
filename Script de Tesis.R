@@ -15,7 +15,7 @@ options(scipen = 999) #Para poder ver más decimales en los resultados
 #######################################################################################
 ##############-----------------Ingresando BD al Software-----------------##############
 #######################################################################################
-data <- read_xlsx("C:/Users/DANIEL GARCIA/Desktop/BD TFM.xlsx")
+data <- read_xlsx("C:/.../BD TFM.xlsx")
 names(data) 
 attach(data)
 summary(data)
