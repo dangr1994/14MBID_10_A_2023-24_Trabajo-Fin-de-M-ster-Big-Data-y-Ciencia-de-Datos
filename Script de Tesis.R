@@ -11,11 +11,12 @@ library("FactoMineR")
 library("factoextra")
 library("rpart")
 library("rpart.plot")
+library(gains)
 options(scipen = 999) #Para poder ver más decimales en los resultados
 #######################################################################################
 ##############-----------------Ingresando BD al Software-----------------##############
 #######################################################################################
-data <- read_xlsx("C:/.../BD TFM.xlsx")
+data <- read_xlsx("C:/Users/DANIEL GARCIA/Desktop/BD TFM.xlsx")
 names(data) 
 attach(data)
 summary(data)
@@ -229,8 +230,6 @@ plot.roc(roc_PCA,print.auc = T,print.thres = "best",col = "blue",xlab = "1-Espec
          ylab = "Sensibilidad") 
 auc_value <- auc(roc_PCA)
 print(paste("AUC del modelo:", round(auc_value, 4)))
-
-
   
 #######################################################################################
 ###########---------Aplicación del Modelo de árboles de decisión--------###########
@@ -266,6 +265,25 @@ plot.roc(roc_arbol,print.auc = T,print.thres = "best",col = "blue",xlab = "1-Esp
 auc_value <- auc(roc_arbol)
 print(paste("AUC del modelo Árbol de Decisión: ", auc_value))
 
+#######################################################################################
+##############---------Despliegue del modelo para un mes Vigente--------###############
+#######################################################################################
+##Esta corrida se realizó a inicios de Octubre 2024
+ruta_setiembre <- "C:/Users/DANIEL GARCIA/Desktop/BD_SETIEMBRE.xlsx"
+new_data <- read_excel(ruta_setiembre)
+#Predicción de probabilidades con el modelo
+predicciones <- predict(model_glm, newdata = new_data, type = "response")
+
+#Agregando las predicciones
+new_data$prediccion_y <- round(predicciones)
+new_data
+
+##Esta corrida se realizó a finales de Octubre 2024
+#Archivo con la variable respuesta `y`
+ruta_setiembre_yreal <- "C:/Users/DANIEL GARCIA/Desktop/BD_SETIEMBRE_YREAL.xlsx"
+data_septiembre_yreal <- read_excel(ruta_setiembre_yreal)
+data_septiembre_yreal$prediccion_y <- round(predicciones)
+confusionMatrix(factor(data_septiembre_yreal$prediccion_y), factor(data_septiembre_yreal$y))
 
 
 
