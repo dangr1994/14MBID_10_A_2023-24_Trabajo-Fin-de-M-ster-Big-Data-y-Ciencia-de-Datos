@@ -271,6 +271,10 @@ print(paste("AUC del modelo Árbol de Decisión: ", auc_value))
 ##Esta corrida se realizó a inicios de Octubre 2024
 ruta_setiembre <- "C:/Users/DANIEL GARCIA/Desktop/BD_SETIEMBRE.xlsx"
 new_data <- read_excel(ruta_setiembre)
+
+############################################################USANDO EL MODELO LOGISTICO
+
+
 #Predicción de probabilidades con el modelo
 predicciones <- predict(model_glm, newdata = new_data, type = "response")
 
@@ -285,5 +289,35 @@ data_septiembre_yreal <- read_excel(ruta_setiembre_yreal)
 data_septiembre_yreal$prediccion_y <- round(predicciones)
 confusionMatrix(factor(data_septiembre_yreal$prediccion_y), factor(data_septiembre_yreal$y))
 
+############################################################USANDO EL PCA
 
+
+independent_vars_new <- data_septiembre_yreal[, c('x1', 'x2', 'x3', 'x4', 'x5', 'x6', 'x7', 'x8')]
+# Aplicar PCA a las nuevas observaciones
+pca_data_new <- as.data.frame(predict(pca_model, newdata = independent_vars_new))  # Usando el modelo PCA ya ajustado
+colnames(pca_data_new) <- paste0("Dim.", 1:ncol(pca_data_new))  # Renombrar las columnas de las componentes
+# Mantener las primeras 5 componentes
+pca_data_new <- pca_data_new[, 1:5]
+# Añadir la variable de respuesta (y) de la nueva base de datos
+final_data_new <- cbind(pca_data_new, y = data_septiembre_yreal$y)
+# Predicciones con el modelo logístico previamente ajustado
+y_pred_prob_new <- predict(logistic_model, newdata = final_data_new, type = "response")
+y_pred_new <- ifelse(y_pred_prob_new > 0.5, 1, 0)  # Umbral de decisión
+data_septiembre_yreal$prediccion_y <- factor(y_pred_new, levels = c(0, 1))
+data_septiembre_yreal$y <- factor(data_septiembre_yreal$y, levels = c(0, 1))
+# Matriz de confusión
+conf_matrix <- confusionMatrix(data_septiembre_yreal$prediccion_y, data_septiembre_yreal$y)
+print(conf_matrix)
+
+
+############################################################USANDO ARB DE DECISION
+
+
+predicciones_nuevas <- predict(modelo_arbol, newdata = data_septiembre_yreal, type = "prob")[, 2]
+# Conversión a valores binarios (0 o 1)
+predicciones_binarias_nuevas <- ifelse(predicciones_nuevas > 0.5, 1, 0)
+# Generar la matriz de confusión
+conf_matrix_nueva <- confusionMatrix(as.factor(predicciones_binarias_nuevas), as.factor(data_septiembre_yreal$y))
+# Mostrar la matriz de confusión
+print(conf_matrix_nueva)
 
